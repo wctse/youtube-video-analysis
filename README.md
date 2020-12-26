@@ -44,12 +44,12 @@ The difficulty on scraping videos lies on the below two problems:
 The second problem contributes to the first. The measure of "popularity" of a video cannot be simply the number of views, because by nature different kinds of video have a different viewer base. For example, music videos are generally much more viewed than others. Among the top 10 videos, 8 of them are music videos. (If you are curious, they are Despacito, Shape of You, See You Again, Uptown Funk, Sorry, Sugar and Roar.)
 
 To add on that, YouTube biases video pushing to a channel's subscribers. It is trivial that if you subscribe to a channel the algorithm will try to push more of its contents to you, more so if you enable the 'bell'. Therefore, we here roughly define the popularity as:
-```math
-\text{Popularity}=\frac{\text{Views}}{\text{Subscribers of the Channel}}
-```
 
+<p style="text-align: center;"><img src="https://render.githubusercontent.com/render/math?math=\displaystyle\text{Popularity}=\frac{\text{Views of the Video}}{\text{Subscribers of the Channel}}"></p>
+
+\
 Then the problem lies on how to find the suitable channels to scrape from. Luckily there is usually a "Channels" page of each YouTube channel, like the following:
-![Vsauce: Channels](https://imgur.com/xDauW5D)
+![Vsauce: Channels](https://i.imgur.com/xDauW5D.png)
 
 Sometimes they suggest relevent channels to viewers because of collaborations, or they simply want to introduce a good channel to their subscribers. No matter why, we can easily use this feature to theortically find unlimited channels to scrape from.
 
