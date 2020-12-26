@@ -15,6 +15,17 @@ from tqdm import tqdm
 
 
 def get_video_from_channel(api_key: str, channelIds: list, how_many_videos: int, subscriber_threshold: int = 1000):
+    """
+    The function to get video details from the channel. It contains the raw returns from Google API. Note that certain
+    limits on the maximum video scraped daily is imposed by Google, and the function automatically returns the scraped
+    videos if it is terminated by Google.
+
+    :param api_key: The api key used for the Google API.
+    :param channelIds: The channel to scrape video from.
+    :param how_many_videos: The limit to the amount of videos to scrape from a channel.
+    :param subscriber_threshold: The minimum subscriber needed for a channel's video to be scraped.
+    :return: A list of video contents from the given channels.
+    """
 
     if subscriber_threshold < 1:
         raise ValueError('Subscriber threshold should not be smaller than 1')
@@ -81,11 +92,21 @@ def get_video_from_channel(api_key: str, channelIds: list, how_many_videos: int,
     return channels_videos
 
 
-def chain_scrape_channel_id(initial_channelIds: list, depth: int = 3, checkpoint_at: int = 100):
+def chain_scrape_channel_id(initial_channelIds: list, depth: int = 3, record_every: int = 0, record_at: str = ""):
+    """
+    The function to scrape the ID of other channels for scraping. Utilises the "channels" page of each channel on
+    YouTube.
+
+    :param initial_channelIds: The channels to start with.
+    :param depth: How many layers of "channels" to search for, starting from the initial channel.
+    :param record_every: If positive, record the intermediate results in the designated txt file.
+    :param record_at: Relative location of the file to record the intermediate results.
+    :return: A list of channel IDs.
+    """
 
     options = ChromeOptions().add_experimental_option('prefs', {
-    'download.prompt_for_download': False,
-    'download.directory_upgrade': True,
+        'download.prompt_for_download': False,
+        'download.directory_upgrade': True,
     })
 
     initial_channels = ['https://www.youtube.com/channel/' + channelIds for channelIds in initial_channelIds]
@@ -116,9 +137,9 @@ def chain_scrape_channel_id(initial_channelIds: list, depth: int = 3, checkpoint
             intermediate_channels.remove(channel)
 
             counter += 1
-            if counter == checkpoint_at:
+            if counter == record_every:
                 counter = 0
-                f = open('checkpoints/checkpoint_' + datetime.now().strftime('%Y%m%d%H%M') + '.txt', 'a')
+                f = open(record_at + datetime.now().strftime('%Y%m%d%H%M') + '.txt', 'a')
                 f.write('\n'.join(result_channels))
                 f.close()
 
