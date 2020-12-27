@@ -44,6 +44,7 @@ def get_video_from_channel(api_key: str, channelIds: list, how_many_videos: int,
 
     try:
         for count, channel in tqdm(enumerate(channelIds)):
+            # Gather statistics of the channel
             channel_stat = youtube.channels().list(part=['statistics'], id=channel).execute()
 
             if not channel_stat['pageInfo']['resultsPerPage']:
@@ -52,11 +53,14 @@ def get_video_from_channel(api_key: str, channelIds: list, how_many_videos: int,
 
             sub = int(channel_stat['items'][0]['statistics']['subscriberCount'])
 
+            # Skip the channel if it has subscriber count less than the threshold
             if sub < subscriber_threshold:
                 continue
 
+            # Use the channel id to retrieve the playlist id, which contains all uploads by that channel
             playlistId = channel[0] + 'U' + channel[2:]
 
+            # Retrieve the information for reach video
             videos = youtube.playlistItems().list(playlistId=playlistId, part=['id, snippet'],
                                                   maxResults=how_many_videos).execute()
 
@@ -66,6 +70,7 @@ def get_video_from_channel(api_key: str, channelIds: list, how_many_videos: int,
                         video_id = videos['items'][i]['snippet']['resourceId']['videoId']
                         video_detail = youtube.videos().list(id=video_id, part='statistics').execute()
 
+                        # Choose certain useful information and append into a list
                         channels_videos.append({
                             'title': videos['items'][i]['snippet']['title'],
                             'thumbnail': videos['items'][i]['snippet']['thumbnails']['high']['url'],
@@ -74,12 +79,13 @@ def get_video_from_channel(api_key: str, channelIds: list, how_many_videos: int,
                             'published_at': videos['items'][i]['snippet']['publishedAt'],
                         })
 
-                    # In some occasions the dictionary items do not exist in request results
+                    # In some occasions the dictionary items do not exist in request results,
+                    # in this case skip to another video
                     except KeyError:
                         continue
 
             # When there are not enough videos for a channel (smaller than how_many_videos),
-            # Record the channel id to report at the end of the function
+            # record the channel id to report at the end of the function
             except IndexError:
                 insufficient_videos[channel] = i+1
                 continue
@@ -88,6 +94,7 @@ def get_video_from_channel(api_key: str, channelIds: list, how_many_videos: int,
     except HttpError:
         print(f'API Request limit exceeded. Returning requested data for the first {count} channels.')
 
+    # Remind the user if the channel does not have enough video. This does not stop the current loop.
     if insufficient_videos:
         print('Channels with insufficient videos:')
         for (key, value) in insufficient_videos.items():
@@ -115,8 +122,13 @@ def scrape_channel_id(initial_channelIds: list, depth: int = 3, record_every: in
 
     initial_channels = ['https://www.youtube.com/channel/' + channelIds for channelIds in initial_channelIds]
 
+    # Intermediate channels for processing in the loop
     intermediate_channels = [] + initial_channels
+
+    # Processed channels to document the channels processed, to prevent duplicated retrieval
     processed_channels = [] + initial_channels
+
+    # Result channels for function return
     result_channels = [] + initial_channelIds
 
     driver = webdriver.Chrome('chromedriver.exe', chrome_options=options)
@@ -127,11 +139,13 @@ def scrape_channel_id(initial_channelIds: list, depth: int = 3, record_every: in
     for i in tqdm(range(depth)):
 
         print('Iteration ' + str(i) + '...')
-        for channel in tqdm(intermediate_channels.copy()):
+        for channel in intermediate_channels.copy():
             processed_channels += [channel]
 
+            # Navigate to the "channels" page of the YouTube channel
             driver.get(channel + '/channels')
 
+            # Identify all linked channels
             elements = driver.find_elements_by_id('channel-info')
             links = [elem.get_attribute('href') for elem in elements]
 
