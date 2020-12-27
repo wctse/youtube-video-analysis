@@ -20,6 +20,10 @@ def get_video_from_channel(api_key: str, channelIds: list, how_many_videos: int,
     limits on the maximum video scraped daily is imposed by Google, and the function automatically returns the scraped
     videos if it is terminated by Google.
 
+    This function takes advantage of an automatic playlist generation by YouTube that, any channel IDs would have an
+    initial of "UC" and its playlist can be retrieved by changing the initial of "UU". Then the function requests
+    the video information from Google API.
+
     :param api_key: The api key used for the Google API.
     :param channelIds: The channel to scrape video from.
     :param how_many_videos: The limit to the amount of videos to scrape from a channel.
@@ -92,7 +96,7 @@ def get_video_from_channel(api_key: str, channelIds: list, how_many_videos: int,
     return channels_videos
 
 
-def chain_scrape_channel_id(initial_channelIds: list, depth: int = 3, record_every: int = 0, record_at: str = ""):
+def scrape_channel_id(initial_channelIds: list, depth: int = 3, record_every: int = 0, record_at: str = ''):
     """
     The function to scrape the ID of other channels for scraping. Utilises the "channels" page of each channel on
     YouTube.
@@ -118,7 +122,7 @@ def chain_scrape_channel_id(initial_channelIds: list, depth: int = 3, record_eve
     driver = webdriver.Chrome('chromedriver.exe', chrome_options=options)
     sleep(3)
 
-    counter = 0
+    count = 0
 
     for i in tqdm(range(depth)):
 
@@ -136,9 +140,9 @@ def chain_scrape_channel_id(initial_channelIds: list, depth: int = 3, record_eve
             result_channels += [x[32:] for x in links if ('channel/UC' in x and x not in processed_channels)]
             intermediate_channels.remove(channel)
 
-            counter += 1
-            if counter == record_every:
-                counter = 0
+            count += 1
+            if count == record_every:
+                count = 0
                 f = open(record_at + datetime.now().strftime('%Y%m%d%H%M') + '.txt', 'a')
                 f.write('\n'.join(result_channels))
                 f.close()
