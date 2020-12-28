@@ -1,7 +1,8 @@
 # Youtube Video Analyis: Project Overview
 This project is an analysis on what contributes to the popularity (or unpopularity) of a YouTube video, except from its content and the consequent average time viewed by each viewer. In the project we explore different opportunities to make your video stand out and improve viewership on top of your creativity, to harness the algorithm.
 
-## Packages (will be) Used
+## Resources (will be) Used
+#### Packages
 * numpy
 * pandas
 * selenium
@@ -9,6 +10,9 @@ This project is an analysis on what contributes to the popularity (or unpopulari
 * scikit-learn
 * tensorflow
 * opencv
+
+#### Other Resources
+* Font "A Big Deal": https://www.dafont.com/a-big-deal.font
 
 ## Project Status
 This project is currently in development. Users are now able to:
