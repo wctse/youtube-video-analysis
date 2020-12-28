@@ -29,6 +29,10 @@ def get_video_from_channel(api_key: str, channelIds: list, how_many_videos: int,
     :param how_many_videos: The limit to the amount of videos to scrape from a channel.
     :param subscriber_threshold: The minimum subscriber needed for a channel's video to be scraped.
     :return: A list of video contents from the given channels.
+
+    TODO:
+    * Break the scraping part and the extraction part into two functions
+    * Add defaultlang into the extraction after breaking into two functions
     """
 
     if subscriber_threshold < 1:
@@ -68,15 +72,27 @@ def get_video_from_channel(api_key: str, channelIds: list, how_many_videos: int,
                 for i in range(how_many_videos):
                     try:
                         video_id = videos['items'][i]['snippet']['resourceId']['videoId']
-                        video_detail = youtube.videos().list(id=video_id, part='statistics').execute()
+                        video_detail = youtube.videos().list(id=video_id, part='id, snippet, statistics').execute()
 
+                        view = int(video_detail['items'][0]['statistics']['viewCount'])
                         # Choose certain useful information and append into a list
                         channels_videos.append({
+                            'id': video_id,
                             'title': videos['items'][i]['snippet']['title'],
                             'thumbnail': videos['items'][i]['snippet']['thumbnails']['high']['url'],
-                            'view_to_sub': int(video_detail['items'][0]['statistics']['viewCount']) / sub,
+                            'view': view,
                             'channel_sub': sub,
+                            'view_to_sub': view / sub,
+                            'like': videos['items'][i]['statistics']['likeCount'],
+                            'dislike': videos['items'][i]['statistics']['dislikeCount'],
+                            'comment': videos['items'][i]['statistics']['commentCount'],
+                            'length': videos['items'][i]['contentDetails']['duration'],
+                            'dimension': videos['items'][i]['contentDetails']['dimension'],
+                            'definition': videos['items'][i]['contentDetails']['definition'],
+                            'caption': videos['items'][i]['contentDetails']['caption'],
+                            'localizations': list(videos['items'][i]['localizations'].keys()),
                             'published_at': videos['items'][i]['snippet']['publishedAt'],
+                            'tags':videos['items'][i]['snippet']['tags']
                         })
 
                     # In some occasions the dictionary items do not exist in request results,
