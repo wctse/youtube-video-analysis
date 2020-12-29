@@ -14,9 +14,76 @@ from time import sleep
 from tqdm import tqdm
 
 
+def scrape_channel_id(initial_channelIds: list, depth: int = 3, record_every: int = 0, record_at: str = ''):
+    """
+    The function to scrape the ID of other channels for scraping. Utilises the "channels" page of each channel on
+    YouTube.
+
+    :param initial_channelIds: The channels to start with.
+    :param depth: How many layers of "channels" to search for, starting from the initial channel.
+    :param record_every: If positive, record the intermediate results in the designated txt file.
+    :param record_at: Relative location of the file to record the intermediate results.
+    :return: A list of channel IDs.
+
+    TODO:
+    * Solve the bug where the list of channels returned include non-ids (names of channel only) but ends with the
+      word "channel"
+    """
+
+    options = ChromeOptions().add_experimental_option('prefs', {
+        'download.prompt_for_download': False,
+        'download.directory_upgrade': True,
+    })
+
+    initial_channels = ['https://www.youtube.com/channel/' + channelIds for channelIds in initial_channelIds]
+
+    # Intermediate channels for processing in the loop
+    intermediate_channels = [] + initial_channels
+
+    # Processed channels to document the channels processed, to prevent duplicated retrieval
+    processed_channels = [] + initial_channels
+
+    # Result channels for function return
+    result_channels = [] + initial_channelIds
+
+    driver = webdriver.Chrome('chromedriver.exe', chrome_options=options)
+    sleep(3)
+
+    count = 0
+
+    for i in tqdm(range(depth)):
+
+        print('Iteration ' + str(i) + '...')
+        for channel in intermediate_channels.copy():
+            processed_channels += [channel]
+
+            # Navigate to the "channels" page of the YouTube channel
+            driver.get(channel + '/channels')
+
+            # Identify all linked channels
+            elements = driver.find_elements_by_id('channel-info')
+            links = [elem.get_attribute('href') for elem in elements]
+
+            intermediate_channels += [x for x in links if x not in processed_channels]
+
+            result_channels += [x[32:] for x in links if ('channel/UC' in x and x not in processed_channels)]
+            intermediate_channels.remove(channel)
+
+            count += 1
+            if count == record_every:
+                count = 0
+                f = open(record_at + datetime.now().strftime('%Y%m%d%H%M') + '.txt', 'a')
+                f.write('\n'.join(result_channels))
+                f.close()
+
+    driver.close()
+
+    return result_channels
+
+
 def get_video_from_channel(api_key: str, channelIds: list, how_many_videos: int, subscriber_threshold: int = 1000):
     """
-    The function to get video details from the channel. It contains the raw returns from Google API. Note that certain
+    The function to get video det   ails from the channel. It contains the raw returns from Google API. Note that certain
     limits on the maximum video scraped daily is imposed by Google, and the function automatically returns the scraped
     videos if it is terminated by Google.
 
@@ -118,65 +185,3 @@ def get_video_from_channel(api_key: str, channelIds: list, how_many_videos: int,
 
     return channels_videos
 
-
-def scrape_channel_id(initial_channelIds: list, depth: int = 3, record_every: int = 0, record_at: str = ''):
-    """
-    The function to scrape the ID of other channels for scraping. Utilises the "channels" page of each channel on
-    YouTube.
-
-    :param initial_channelIds: The channels to start with.
-    :param depth: How many layers of "channels" to search for, starting from the initial channel.
-    :param record_every: If positive, record the intermediate results in the designated txt file.
-    :param record_at: Relative location of the file to record the intermediate results.
-    :return: A list of channel IDs.
-    """
-
-    options = ChromeOptions().add_experimental_option('prefs', {
-        'download.prompt_for_download': False,
-        'download.directory_upgrade': True,
-    })
-
-    initial_channels = ['https://www.youtube.com/channel/' + channelIds for channelIds in initial_channelIds]
-
-    # Intermediate channels for processing in the loop
-    intermediate_channels = [] + initial_channels
-
-    # Processed channels to document the channels processed, to prevent duplicated retrieval
-    processed_channels = [] + initial_channels
-
-    # Result channels for function return
-    result_channels = [] + initial_channelIds
-
-    driver = webdriver.Chrome('chromedriver.exe', chrome_options=options)
-    sleep(3)
-
-    count = 0
-
-    for i in tqdm(range(depth)):
-
-        print('Iteration ' + str(i) + '...')
-        for channel in intermediate_channels.copy():
-            processed_channels += [channel]
-
-            # Navigate to the "channels" page of the YouTube channel
-            driver.get(channel + '/channels')
-
-            # Identify all linked channels
-            elements = driver.find_elements_by_id('channel-info')
-            links = [elem.get_attribute('href') for elem in elements]
-
-            intermediate_channels += [x for x in links if x not in processed_channels]
-
-            result_channels += [x[32:] for x in links if ('channel/UC' in x and x not in processed_channels)]
-            intermediate_channels.remove(channel)
-
-            count += 1
-            if count == record_every:
-                count = 0
-                f = open(record_at + datetime.now().strftime('%Y%m%d%H%M') + '.txt', 'a')
-                f.write('\n'.join(result_channels))
-                f.close()
-
-    driver.close()
-
-    return result_channels
