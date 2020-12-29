@@ -184,4 +184,3 @@ def get_video_from_channel(api_key: str, channelIds: list, how_many_videos: int,
             print(f'Channel {key} only contains {value} video(s).')
 
     return channels_videos
-
