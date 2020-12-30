@@ -110,8 +110,11 @@ def get_video_from_channels(api_key: str, channelIds: list, how_many_videos: int
 
     video_details = []  # Variable for tracking videos in each channel
     count = 0  # Variable for how many videos scraped
-    not_exist = []  # Variable to track not existing channels to report at the end of the function
-    no_video = [] # Variable to track channels with no video to report at the end of the function
+
+    # Variables to track these situations and report at the end of the function:
+    not_exist = []  # Not existing channels
+    no_video = [] # No video
+    disabled_sub = [] # Disabled function to check the number of subscribers
     video_id = ''
 
     try:
@@ -124,7 +127,11 @@ def get_video_from_channels(api_key: str, channelIds: list, how_many_videos: int
                 not_exist += [channel]
                 continue
 
-            sub = int(channel_stat['items'][0]['statistics']['subscriberCount'])
+            try:
+                sub = int(channel_stat['items'][0]['statistics']['subscriberCount'])
+            except KeyError:
+                disabled_sub += [channel]
+                continue
 
             # Skip the channel if it has subscriber count less than the threshold
             if sub < subscriber_threshold:

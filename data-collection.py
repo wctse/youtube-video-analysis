@@ -21,8 +21,9 @@ else:
 with open('data/channels/channels_20201229_182240.txt', 'r') as file:
     channels = file.read().splitlines()
 
-videos = scraping.get_video_from_channels(key, channels, how_many_videos=10, subscriber_threshold=1000)
+videos = scraping.get_video_from_channels(key, channels, how_many_videos=1, subscriber_threshold=1000)
 
+#
 with open('data/raw/' + now + '.json', 'a') as file:
     json.dump(videos, file)
 
