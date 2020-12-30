@@ -6,7 +6,6 @@ from selenium.webdriver import ChromeOptions
 from datetime import datetime
 from time import sleep
 from tqdm import tqdm
-import re
 
 
 def scrape_channel_ids(initial_channelIds: list, depth: int, checkpoint_at: int = 0, write_to_file: bool = True):
