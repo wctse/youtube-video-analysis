@@ -1,9 +1,10 @@
+import numpy as np
 import pandas as pd
-
 import re
 import requests
-from datetime import timedelta
+from datetime import datetime, timedelta
 
+now = datetime.now().strftime('%Y%m%d_%H%M%S')
 key = open('api-key.txt', 'r').read()
 df = pd.read_csv('data/csv/data_20201230_194925.csv', index_col=0)
 
@@ -57,9 +58,22 @@ df['category'] = df['category'].apply(str).map(categories)
 df = df[df['category'] != 'Music']
 
 # (4) Column: 'title'
-## Length
+
+## 4a. Length
 df['title_length'] = df['title'].apply(len)
-## Capital Letters
+
+## 4b. Are there any all-capital words?
+df['any_capitalized_word'] = np.nan
+
+titles_tokenized = list(df['title'].apply(str.split))
+
+for i, title in enumerate(titles_tokenized):
+    df.iat[i, df.columns.get_loc('any_capitalized_word')] =\
+        any([True if word == word.upper() else False for word in title])
+
+## 4c. Is the whole title capitalized?
+df['all_capitalized_word'] = df['title'].apply(lambda x: 1 if x == x.upper() else 0)
+
 ## Sentiment Analysis, untreated & absolute
 ## What word does the title start with?
 
@@ -69,3 +83,8 @@ df['title_length'] = df['title'].apply(len)
 ## Are there animals?
 ## Are there squares, boxes, circles that highlights things?
 ## Are there words?
+
+# (6) Column: 'length'
+df['length=10m+'] = df['length'].apply(lambda x: 1 if x > 600 else 0)
+
+df.to_csv('data/cleaned_csv/data_' + now + '_cleaned.csv')
