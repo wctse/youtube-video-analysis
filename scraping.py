@@ -184,6 +184,12 @@ def get_video_from_channels(api_key: str, channelIds: list, how_many_videos: int
 
 
 def parse_video_details(video_details: dict):
+    """
+    This function parses the details of the video as retrieved from YouTube API, in the format of dictionary,
+    into a simplified, cherry-picked and less layered version of dictionary.
+    :param video_details: The video details retrieved from YouTube API, by the function "get_video_from_channels".
+    :return: Dictionary with key of video ID, and a dictionary value of key-value pairs of video details.
+    """
     info = {}
 
     for d in video_details:
