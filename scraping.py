@@ -111,6 +111,8 @@ def get_video_from_channels(api_key: str, channelIds: list, how_many_videos: int
     video_details = []  # Variable for tracking videos in each channel
     count = 0  # Variable for how many videos scraped
     not_exist = []  # Variable to track not existing channels to report at the end of the function
+    no_video = [] # Variable to track channels with no video to report at the end of the function
+    video_id = ''
 
     try:
         for channel in tqdm(channelIds):
@@ -132,9 +134,14 @@ def get_video_from_channels(api_key: str, channelIds: list, how_many_videos: int
             playlist_id = channel[0] + 'U' + channel[2:]
 
             # Retrieve the id of reach video
-            channel_videos = youtube.playlistItems().list(playlistId=playlist_id,
-                                                          part=['snippet'],
-                                                          maxResults=how_many_videos).execute()
+            try:
+                channel_videos = youtube.playlistItems().list(playlistId=playlist_id,
+                                                              part=['snippet'],
+                                                              maxResults=how_many_videos).execute()
+            # Case where the channel does not have any videos, so the API returns HttpError "cannot be found"
+            except HttpError:
+                no_video += [channel]
+                continue
 
             video_ids = [video['snippet']['resourceId']['videoId'] for video in channel_videos['items']]
 
@@ -150,13 +157,19 @@ def get_video_from_channels(api_key: str, channelIds: list, how_many_videos: int
 
     # Stop the process and return the existing results when API limit is reached
     except HttpError:
-        print('YouTube API blocked the request. Possibly API Request limit exceeded.\n' +
+        print(f'YouTube API blocked the request upon request information for video with ID {video_id}.\n' +
+              'Possibly API Request limit exceeded.\n' +
               f'Returning requested data for the scraped {count} videos.')
 
     # Notify the user on non-existing channels
     if not_exist:
         print(f'Channel(s) with the following id do not exist:')
         for channel in not_exist:
+            print(channel)
+
+    if no_video:
+        print(f'Channel(s) with the following id do not have videos:')
+        for channel in no_video:
             print(channel)
 
     print(f'Scraped the details of {count} videos.')
