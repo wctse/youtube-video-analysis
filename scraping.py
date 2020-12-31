@@ -128,7 +128,8 @@ def get_video_from_channels(api_key: str, channelIds: list, how_many_videos: int
 
             try:
                 sub = int(channel_stat['items'][0]['statistics']['subscriberCount'])
-            except KeyError:
+            except KeyError as e:
+                print(e)
                 disabled_sub += [channel]
                 continue
 
@@ -145,7 +146,8 @@ def get_video_from_channels(api_key: str, channelIds: list, how_many_videos: int
                                                               part=['snippet'],
                                                               maxResults=how_many_videos).execute()
             # Case where the channel does not have any videos, so the API returns HttpError "cannot be found"
-            except HttpError:
+            except HttpError as e:
+                print(e)
                 no_video += [channel]
                 continue
 
@@ -162,7 +164,8 @@ def get_video_from_channels(api_key: str, channelIds: list, how_many_videos: int
                 count += 1
 
     # Stop the process and return the existing results when API limit is reached
-    except HttpError:
+    except HttpError as e:
+        print(e)
         print(f'YouTube API blocked the request upon request information for video with ID {video_id}.\n' +
               'Possibly API Request limit exceeded.\n' +
               f'Returning requested data for the scraped {count} videos.')
