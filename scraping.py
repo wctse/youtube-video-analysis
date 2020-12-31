@@ -93,11 +93,10 @@ def get_video_from_channels(api_key: str, channelIds: list, how_many_videos: int
     :param channelIds: The channel to scrape video from.
     :param how_many_videos: The limit to the amount of videos to scrape from a channel.
     :param subscriber_threshold: The minimum subscriber needed for a channel's video to be scraped.
-    :return: A list of video contents from the given channels.
-
-    TODO:
-    * Add metadata on when the videos are scraped.
+    :return: Tuple of: (1) A list of video contents from the given channels; (2) The time videos are scraped
     """
+
+    scrape_time = datetime.now().replace(microsecond=0)
 
     if subscriber_threshold < 1:
         raise ValueError('Subscriber threshold should not be smaller than 1')
@@ -183,17 +182,18 @@ def get_video_from_channels(api_key: str, channelIds: list, how_many_videos: int
 
     print(f'Scraped the details of {count} videos.')
 
-    return video_details
+    return video_details, scrape_time
 
 
-def parse_video_details(video_details: dict):
+def parse_video_details(video_details: dict, scrape_time: datetime):
     """
     This function parses the details of the video as retrieved from YouTube API, in the format of dictionary,
     into a simplified, cherry-picked and less layered version of dictionary.
+    :param scrape_time: The time videos are scraped.
     :param video_details: The video details retrieved from YouTube API, by the function "get_video_from_channels".
     :return: Dictionary with key of video ID, and a dictionary value of key-value pairs of video details.
     """
-    info = {}
+    df = {}
 
     for d in video_details:
         video_id = d['id']
@@ -202,7 +202,7 @@ def parse_video_details(video_details: dict):
         view = int(d.get('statistics').get('viewCount'))
 
         # Choose certain useful information and append into a list
-        info[video_id] = ({
+        df[video_id] = ({
             'title': d.get('snippet').get('title'),
             'view': view,
             'channel_sub': sub,
@@ -222,20 +222,21 @@ def parse_video_details(video_details: dict):
         })
 
         try:
-            info[video_id]['localizations'] = d.get('localizations').keys()
+            df[video_id]['localizations'] = d.get('localizations').keys()
         except AttributeError:
-            info[video_id]['localizations'] = ''
+            df[video_id]['localizations'] = ''
 
         try:
-            info[video_id]['topic_categories'] = d.get('topicDetails').get('topicCategories')
+            df[video_id]['topic_categories'] = d.get('topicDetails').get('topicCategories')
         except AttributeError:
-            info[video_id]['topic_categories'] = ''
+            df[video_id]['topic_categories'] = ''
 
         try:
-            info[video_id]['default_language'] = d.get('snippet').get('defaultLanguage')
+            df[video_id]['default_language'] = d.get('snippet').get('defaultLanguage')
         except AttributeError:
-            info[video_id]['default_language'] = ''
+            df[video_id]['default_language'] = ''
 
-    info = DataFrame(info).transpose()
+    df = DataFrame(df).transpose()
+    df.scrape_time = scrape_time
 
-    return info
+    return df
