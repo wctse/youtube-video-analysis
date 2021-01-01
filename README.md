@@ -9,7 +9,7 @@ This project is an analysis on what contributes to the popularity (or unpopulari
 * Google API
 * scikit-learn
 * tensorflow
-* imageAI (YOLO)
+* opencv, imageAI (YOLO)
 
 #### Other Resources
 * Font "A Big Deal": https://www.dafont.com/a-big-deal.font
