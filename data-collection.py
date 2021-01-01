@@ -1,3 +1,5 @@
+# TODO: Incorporate the scrape time into the processes
+
 import pandas as pd
 import scraping
 import json
@@ -22,14 +24,20 @@ else:
 with open('data/channels/channels_20201229_182240.txt', 'r') as file:
     channels = file.read().splitlines()
 
-videos = scraping.get_video_from_channels(key, channels, how_many_videos=1, subscriber_threshold=1000)
+videos, scrape_time = scraping.get_video_from_channels(key, channels, how_many_videos=1, subscriber_threshold=1000)
 
 with open('data/raw/' + now + '.json', 'a') as file:
     json.dump(videos, file)
 
+# Use option 1 for live processing, option 2 for delayed processing
+## Option 1
 with open('data/raw/' + now + '.json', 'r') as file:
     raw = json.load(file)
 
+## Option 2
+with open('data/raw/20201231_133112.json', 'r') as file:
+    raw = json.load(file)
+
 # Parse video formats and output into a csv
-parsed = scraping.parse_video_details(raw)
-pd.DataFrame(parsed).to_csv('data/csv/data_' + datetime.now().strftime('%Y%m%d_%H%M%S') + '.csv')
+parsed = scraping.parse_video_details(raw, _)
+pd.DataFrame(parsed).to_csv('data/csv/data_' + now + '.csv')

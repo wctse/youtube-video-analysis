@@ -236,6 +236,11 @@ def parse_video_details(video_details: dict, scrape_time: datetime):
         except AttributeError:
             df[video_id]['default_language'] = ''
 
+        if 'liveStreamingDetails' in d:
+            df[video_id]['live'] = 1
+        else:
+            df[video_id]['live'] = 0
+
     df = DataFrame(df).transpose()
     df.scrape_time = scrape_time
 
