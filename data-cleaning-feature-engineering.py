@@ -1,8 +1,18 @@
+"""
+This .py file runs on TensorFlow 1.15.
+Any TensorFlow 2 version would return error in part 6 regarding object detection.
+It is suggested for users to create an extra environment explicitly with TF 1.15.
+"""
+
 import numpy as np
 import pandas as pd
+
+from google.cloud import storage, vision
+
 import re
 import requests
 from datetime import datetime, timedelta
+from tqdm import tqdm
 
 now = datetime.now().strftime('%Y%m%d_%H%M%S')
 key = open('api-key.txt', 'r').read()
@@ -83,8 +93,40 @@ df['all_capitalized_word'] = df['title'].apply(lambda x: 1 if x == x.upper() els
 
 # (6) Column: 'thumbnail'
 ## 6a. Dominant Colour
-## 6b. Are there people?
-## 6c. Are there animals?
+
+## 6b. Object Detections
+
+for thumbnail in tqdm(df['thumbnail']):
+    pic_url = thumbnail
+
+    with open('images/pic.jpg', 'wb') as handle:
+        response = requests.get('https://i.ytimg.com/vi/kHOVWiZKpHM/hqdefault.jpg', stream=True)
+
+        for block in response.iter_content(1024):
+            if not block:
+                break
+            handle.write(block)
+
+    # for obj in detection:
+    #     if obj['name'] == 'person' and obj['percentage_probability'] > 40:
+    #         df['thumbnail_with_person'] = 1
+    #     else:
+    #         df['thumbnail_with_person'] = 0
+
+# Explicitly use service account credentials by specifying the private key file.
+storage_client = storage.Client.from_service_account_json('google-cloud/service-account.json')
+
+# Make an authenticated API request
+buckets = list(storage_client.list_buckets())
+print(buckets)
+
+annotator = vision.ImageAnnotatorClient()
+with open('images/pic.jpg', 'rb') as image_file:
+    content = image_file.read()
+image = vision.Image(content=content)
+objects = annotator.object_localization(image=image).localized_object_annotations
+objects
+
 ## 6d. Are there squares, boxes, circles that highlights things?
 ## 6e. Are there words?
 
