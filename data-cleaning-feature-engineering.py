@@ -18,7 +18,7 @@ pd.options.mode.chained_assignment = None
 
 now = datetime.now().strftime('%Y%m%d_%H%M%S')
 key = open('api-key.txt', 'r').read()
-csv = 'data_20210101_145809.csv'
+csv = 'data_20210101_145809_updatedthumbnail.csv'  # Change this
 df = pd.read_csv(f'data/csv/{csv}').astype('object')
 
 # (1) Filter data
@@ -129,8 +129,8 @@ for i, url in tqdm(enumerate(df['thumbnail'])):
             df.iloc[i, df.columns.get_loc(column_name)] += 1
 
     ## 6c. Are there words? What are they?
-    # TODO: Some OCR-recognized texts are not words, and they should be separated from clear words on the thumbnail in
-    #  feature generation.
+    ## TODO: Some OCR-recognized texts are not words, and they should be separated from clear words
+    ##  on the thumbnail in feature generation.
 
     texts = annotator.text_detection(image=image).text_annotations
 
