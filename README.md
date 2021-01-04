@@ -3,13 +3,14 @@ This project is an analysis on what contributes to the popularity (or unpopulari
 
 ## Resources (will be) Used
 #### Packages
-* numpy
-* pandas
-* selenium
-* Google API
-* scikit-learn
-* tensorflow
-* opencv, imageAI (YOLO)
+* Numpy
+* Pandas
+* Scipy
+* Selenium
+* Google YouTube API for extracting data from YouTube
+* Google Cloud Vision for detecting objects and texts from video thumbnail
+* Scikit-learn
+* TensorFlow
 
 #### Other Resources
 * Font "A Big Deal": https://www.dafont.com/a-big-deal.font
