@@ -218,7 +218,7 @@ def parse_video_details(video_details: dict, scrape_time: datetime):
             'published_at': d.get('snippet').get('publishedAt'),
             'tags': d.get('snippet').get('tags'),
             'category': d.get('snippet').get('categoryId'),
-            'thumbnail': d.get('snippet').get('thumbnails').get('high').get('url'),
+            'thumbnail': d.get('snippet').get('thumbnails').get('maxres').get('url'),
         })
 
         try:
