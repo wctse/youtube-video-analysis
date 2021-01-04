@@ -1,4 +1,8 @@
+
+
 # Youtube Video Analyis: Project Overview
+![GitHub followers](https://img.shields.io/github/followers/wctse?style=flat-square) ![GitHub last commit](https://img.shields.io/github/last-commit/wctse/youtube-video-analysis?style=flat-square) ![Twitter URL](https://img.shields.io/twitter/url?color=%230E76A8&label=LinkedIn&logo=LinkedIn&style=flat-square&url=https%3A%2F%2Fwww.linkedin.com%2Fin%2Fwctse%2F)
+
 This project is an analysis on what contributes to the popularity (or unpopularity) of a YouTube video, except from its content and the consequent average time viewed by each viewer. In the project we explore different opportunities to make your video stand out and improve viewership on top of your creativity, to harness the algorithm.
 
 ## Resources (will be) Used
