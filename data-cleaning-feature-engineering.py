@@ -96,36 +96,26 @@ df['all_capitalized_word'] = df['title'].apply(lambda x: 1 if x == x.upper() els
 
 ## 6b. Object Detections
 
-for thumbnail in tqdm(df['thumbnail']):
-    pic_url = thumbnail
-
-    with open('images/pic.jpg', 'wb') as handle:
-        response = requests.get('https://i.ytimg.com/vi/kHOVWiZKpHM/hqdefault.jpg', stream=True)
-
-        for block in response.iter_content(1024):
-            if not block:
-                break
-            handle.write(block)
-
-    # for obj in detection:
-    #     if obj['name'] == 'person' and obj['percentage_probability'] > 40:
-    #         df['thumbnail_with_person'] = 1
-    #     else:
-    #         df['thumbnail_with_person'] = 0
+# Google Vision API is used in this section.
+# It is also required to set the Environment Variable "GOOGLE_APPLICATION_CREDENTIALS" to a json file provided by
+# Google. Check https://cloud.google.com/docs/authentication/getting-started for more details.
 
 # Explicitly use service account credentials by specifying the private key file.
 storage_client = storage.Client.from_service_account_json('google-cloud/service-account.json')
 
-# Make an authenticated API request
-buckets = list(storage_client.list_buckets())
-print(buckets)
-
 annotator = vision.ImageAnnotatorClient()
 with open('images/pic.jpg', 'rb') as image_file:
     content = image_file.read()
-image = vision.Image(content=content)
+image = vision.Image()
+image.source.image_uri = 'https://i.ytimg.com/vi/kHOVWiZKpHM/hqdefault.jpg'
 objects = annotator.object_localization(image=image).localized_object_annotations
-objects
+print('Number of objects found: {}'.format(len(objects)))
+
+for object_ in objects:
+    print('\n{} (confidence: {})'.format(object_.name, object_.score))
+    print('Normalized bounding polygon vertices: ')
+    for vertex in object_.bounding_poly.normalized_vertices:
+        print(' - ({}, {})'.format(vertex.x, vertex.y))
 
 ## 6d. Are there squares, boxes, circles that highlights things?
 ## 6e. Are there words?
