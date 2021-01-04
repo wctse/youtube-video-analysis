@@ -99,7 +99,7 @@ df['all_capitalized_word'] = df['title'].apply(lambda x: 1 if x == x.upper() els
 ## 6a. Dominant Colour
 
 
-## 6b. Object Detection
+## 6b & 6c
 ## Google Vision API is used in this section.
 ## It is also required to set the Environment Variable "GOOGLE_APPLICATION_CREDENTIALS" to a json file provided by
 ## Google. Check https://cloud.google.com/docs/authentication/getting-started for more details.
@@ -117,6 +117,8 @@ max_text_length = 0
 
 for i, url in tqdm(enumerate(df['thumbnail'])):
     image.source.image_uri = url
+
+    ## 6b. Object Detection
 
     objects = annotator.object_localization(image=image).localized_object_annotations
     df.iloc[i, df.columns.get_loc('thumbnail_objects')] = len(objects)
