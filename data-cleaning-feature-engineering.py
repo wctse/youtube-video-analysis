@@ -19,7 +19,7 @@ pd.options.mode.chained_assignment = None
 now = datetime.now().strftime('%Y%m%d_%H%M%S')
 key = open('api-key.txt', 'r').read()
 csv = 'data_20210101_145809.csv'
-df = pd.read_csv(f'data/csv/{csv}')
+df = pd.read_csv(f'data/csv/{csv}').astype('object')
 
 # (1) Filter data
 ## 1a. Videos that is not English-based, or consists of English localizations
@@ -94,26 +94,31 @@ df['all_capitalized_word'] = df['title'].apply(lambda x: 1 if x == x.upper() els
 ## 5e. What word does the title start with?
 
 # (6) Column: 'thumbnail'
+# TODO: Rearrange the columns after running all thumbnails through Google Vision API
+
 ## 6a. Dominant Colour
 
-## 6b. Object Detections
 
-# Google Vision API is used in this section.
-# It is also required to set the Environment Variable "GOOGLE_APPLICATION_CREDENTIALS" to a json file provided by
-# Google. Check https://cloud.google.com/docs/authentication/getting-started for more details.
+## 6b. Object Detection
+## Google Vision API is used in this section.
+## It is also required to set the Environment Variable "GOOGLE_APPLICATION_CREDENTIALS" to a json file provided by
+## Google. Check https://cloud.google.com/docs/authentication/getting-started for more details.
 
-# Explicitly use service account credentials by specifying the private key file.
+## Explicitly use service account credentials by specifying the private key file.
 storage_client = storage.Client.from_service_account_json('google-cloud/service-account.json')
 
 annotator = vision.ImageAnnotatorClient()
 image = vision.Image()
 
 df['thumbnail_objects'] = 0
+df['thumbnail_text_length'] = 0
+df['thumbnail_text_content'] = None
+max_text_length = 0
 
 for i, url in tqdm(enumerate(df['thumbnail'])):
     image.source.image_uri = url
-    objects = annotator.object_localization(image=image).localized_object_annotations
 
+    objects = annotator.object_localization(image=image).localized_object_annotations
     df.iloc[i, df.columns.get_loc('thumbnail_objects')] = len(objects)
 
     for object_ in objects:
@@ -123,13 +128,27 @@ for i, url in tqdm(enumerate(df['thumbnail'])):
         if object_.score > 0.5:
             df.iloc[i, df.columns.get_loc(column_name)] += 1
 
-## 6d. Are there squares, boxes, circles that highlights things?
+    ## 6c. Are there words? What are they?
+    # TODO: Some OCR-recognized texts are not words, and they should be separated from clear words on the thumbnail in
+    #  feature generation.
 
+    texts = annotator.text_detection(image=image).text_annotations
 
-## 6e. Are there words? What are them?
+    # Only assign values to DataFrame if there are texts
+    if texts:
+        text_lines = texts[0].description.split('\n')[:-1]
 
+        # Create new columns in df if the length of the list is longer than the number of existing columns
+        if max_text_length < len(text_lines):
+            for x in range(max_text_length, len(text_lines)):
+                df['thumbnail_text_' + str(x)] = None
+            max_text_length = len(text_lines)
 
-# (7) Column: 'length'
-df['length=10m+'] = df['length'].apply(lambda x: 1 if x > 600 else 0)
+        for x, text in enumerate(text_lines):
+            df.iloc[i, df.columns.get_loc('thumbnail_text_' + str(x))] = text
+
+        df.iloc[i, df.columns.get_loc('thumbnail_text_length')] = len(text_lines)
+
+    ## 6d. Are there squares, boxes, circles that highlights things?
 
 df.to_csv('data/cleaned_csv/data_' + now + '_cleaned.csv')
