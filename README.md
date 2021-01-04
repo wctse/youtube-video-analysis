@@ -14,7 +14,6 @@ This project is an analysis on what contributes to the popularity (or unpopulari
 
 #### Other Resources
 * Font "A Big Deal": https://www.dafont.com/a-big-deal.font
-* Pre-trained YOLO model: From https://stackabuse.com/object-detection-with-imageai-in-python/
 
 ## Project Status
 This project is currently in development. Users are now able to:
