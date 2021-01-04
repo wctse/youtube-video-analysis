@@ -6,7 +6,6 @@ It is suggested for users to create an extra environment explicitly with TF 1.15
 
 import numpy as np
 import pandas as pd
-
 from google.cloud import storage, vision
 
 import re
@@ -14,10 +13,13 @@ import requests
 from datetime import datetime, timedelta
 from tqdm import tqdm
 
+# Turn off "A value is trying to be set on a copy of a slice from a DataFrame" warning
+pd.options.mode.chained_assignment = None
+
 now = datetime.now().strftime('%Y%m%d_%H%M%S')
 key = open('api-key.txt', 'r').read()
 csv = 'data_20210101_145809.csv'
-df = pd.read_csv(f'data/csv/{csv}', index_col=0)
+df = pd.read_csv(f'data/csv/{csv}')
 
 # (1) Filter data
 ## 1a. Videos that is not English-based, or consists of English localizations
@@ -104,19 +106,27 @@ df['all_capitalized_word'] = df['title'].apply(lambda x: 1 if x == x.upper() els
 storage_client = storage.Client.from_service_account_json('google-cloud/service-account.json')
 
 annotator = vision.ImageAnnotatorClient()
-with open('images/pic.jpg', 'rb') as image_file:
-    content = image_file.read()
 image = vision.Image()
-image.source.image_uri = 'https://i.ytimg.com/vi/kHOVWiZKpHM/hqdefault.jpg'
-objects = annotator.object_localization(image=image).localized_object_annotations
-print('Number of objects found: {}'.format(len(objects)))
+
+df['thumbnail_objects'] = 0
+
+df = df.iloc[0:10]
+
+for i, url in tqdm(enumerate(df['thumbnail'])):
+    image.source.image_uri = url
+    objects = annotator.object_localization(image=image).localized_object_annotations
+
+    df.iloc[i, df.columns.get_loc('thumbnail_objects')] = len(objects)
+
+    for object_ in objects:
+        column_name = 'thumbnail_' + object_.name.replace(' ', '').lower()
+        if column_name not in df.columns:
+            df[column_name] = 0
+        if object_.score > 0.5:
+            df.iloc[i, df.columns.get_loc(column_name)] += 1
 
 for object_ in objects:
-    print('\n{} (confidence: {})'.format(object_.name, object_.score))
-    print('Normalized bounding polygon vertices: ')
-    for vertex in object_.bounding_poly.normalized_vertices:
-        print(' - ({}, {})'.format(vertex.x, vertex.y))
-
+    print(object_)
 ## 6d. Are there squares, boxes, circles that highlights things?
 ## 6e. Are there words?
 
