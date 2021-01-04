@@ -1,0 +1,2 @@
+Please refer to the Google Cloud API documentations:
+https://cloud.google.com/docs/authentication/getting-started
