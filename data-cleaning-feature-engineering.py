@@ -110,8 +110,6 @@ image = vision.Image()
 
 df['thumbnail_objects'] = 0
 
-df = df.iloc[0:10]
-
 for i, url in tqdm(enumerate(df['thumbnail'])):
     image.source.image_uri = url
     objects = annotator.object_localization(image=image).localized_object_annotations
@@ -124,11 +122,12 @@ for i, url in tqdm(enumerate(df['thumbnail'])):
             df[column_name] = 0
         if object_.score > 0.5:
             df.iloc[i, df.columns.get_loc(column_name)] += 1
-            
+
 ## 6d. Are there squares, boxes, circles that highlights things?
 
 
-## 6e. Are there words?
+## 6e. Are there words? What are them?
+
 
 # (7) Column: 'length'
 df['length=10m+'] = df['length'].apply(lambda x: 1 if x > 600 else 0)
