@@ -124,10 +124,10 @@ for i, url in tqdm(enumerate(df['thumbnail'])):
             df[column_name] = 0
         if object_.score > 0.5:
             df.iloc[i, df.columns.get_loc(column_name)] += 1
-
-for object_ in objects:
-    print(object_)
+            
 ## 6d. Are there squares, boxes, circles that highlights things?
+
+
 ## 6e. Are there words?
 
 # (7) Column: 'length'
