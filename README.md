@@ -1,5 +1,5 @@
 # Youtube Video Analyis: Project Overview
-![GitHub followers](https://img.shields.io/github/followers/wctse?style=flat-square) ![GitHub last commit](https://img.shields.io/github/last-commit/wctse/youtube-video-analysis?style=flat-square) ![Twitter URL](https://img.shields.io/twitter/url?label=Tweet%20About%20This%20Project&style=flat-square&url=https%3A%2F%2Fwww.linkedin.com%2Fin%2Fwctse%2F)
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/27a3c053069244cda76e3f609559442f)](https://app.codacy.com/gh/wctse/youtube-video-analysis?utm_source=github.com&utm_medium=referral&utm_content=wctse/youtube-video-analysis&utm_campaign=Badge_Grade)![GitHub followers](https://img.shields.io/github/followers/wctse?style=flat-square) ![GitHub last commit](https://img.shields.io/github/last-commit/wctse/youtube-video-analysis?style=flat-square) ![Twitter URL](https://img.shields.io/twitter/url?label=Tweet%20About%20This%20Project&style=flat-square&url=https%3A%2F%2Fwww.linkedin.com%2Fin%2Fwctse%2F)
 
 This project is an analysis on what contributes to the popularity (or unpopularity) of a YouTube video, except from its content and the consequent average time viewed by each viewer. In the project we explore different opportunities to make your video stand out and improve viewership on top of your creativity, to harness the algorithm.
 
@@ -30,7 +30,7 @@ These sections or features are to be developed:
 ## Motivation
 One of the main motivation to creating this project is this Veritasium (A popular scientific YouTube channel) video:
 
-[![Codacy Badge](https://api.codacy.com/project/badge/Grade/27a3c053069244cda76e3f609559442f)](https://app.codacy.com/gh/wctse/youtube-video-analysis?utm_source=github.com&utm_medium=referral&utm_content=wctse/youtube-video-analysis&utm_campaign=Badge_Grade)
+
 [![My Video Went Viral. Here's Why](https://i.ytimg.com/vi/fHsa9DqmId8/hq720.jpg?sqp=-oaymwEZCNAFEJQDSFXyq4qpAwsIARUAAIhCGAFwAQ==&rs=AOn4CLBme2X0lAIEWCgphf9-k3IqGtnT9w)](https://www.youtube.com/watch?v=fHsa9DqmId8)
 
 This video pointed out the nature of how YouTube shows video to people: Based on their, and other people's preferences, that is judged by the data on what video they click into.
