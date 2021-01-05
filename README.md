@@ -1,33 +1,31 @@
-
-
 # Youtube Video Analyis: Project Overview
 ![GitHub followers](https://img.shields.io/github/followers/wctse?style=flat-square) ![GitHub last commit](https://img.shields.io/github/last-commit/wctse/youtube-video-analysis?style=flat-square) ![Twitter URL](https://img.shields.io/twitter/url?label=Tweet%20About%20This%20Project&style=flat-square&url=https%3A%2F%2Fwww.linkedin.com%2Fin%2Fwctse%2F)
 
 This project is an analysis on what contributes to the popularity (or unpopularity) of a YouTube video, except from its content and the consequent average time viewed by each viewer. In the project we explore different opportunities to make your video stand out and improve viewership on top of your creativity, to harness the algorithm.
 
 ## Resources (will be) Used
-#### Packages
-*  Numpy
-*  Pandas
-*  Scipy
-*  Selenium
-*  Google YouTube API for extracting data from YouTube
-*  Google Cloud Vision for detecting objects and texts from video thumbnail
-*  Scikit-learn
-*  TensorFlow
+### Packages
+*   Numpy
+*   Pandas
+*   Scipy
+*   Selenium
+*   Google YouTube API for extracting data from YouTube
+*   Google Cloud Vision for detecting objects and texts from video thumbnail
+*   Scikit-learn
+*   TensorFlow
 
 #### Other Resources
-*  Font "A Big Deal": https://www.dafont.com/a-big-deal.font
+*   Font "A Big Deal": https://www.dafont.com/a-big-deal.font
 
 ## Project Status
 This project is currently in development. Users are now able to:
-*  Automatically find users to scrape by the "Channels" page on each YouTube channel
-*  Scrape the title and thumbnail of a certain amonut of recent videos
+*   Automatically find users to scrape by the "Channels" page on each YouTube channel
+*   Scrape the title and thumbnail of a certain amonut of recent videos
 
 These sections or features are to be developed:
-*  Explore the nature of the data
-*  Generate quantitative data from the titles and thumbnails
-*  Apply ordinary models and neural network onto the data and analyse the findings
+*   Explore the nature of the data
+*   Generate quantitative data from the titles and thumbnails
+*   Apply ordinary models and neural network onto the data and analyse the findings
 
 ## Motivation
 One of the main motivation to creating this project is this Veritasium (A popular scientific YouTube channel) video:
@@ -39,10 +37,10 @@ This video pointed out the nature of how YouTube shows video to people: Based on
 Therefore, if we are possible to find the trick, or at least tips on what kind of title or thumbnail would perform the best in this vehement competition, those people may be able to gain an unfair competitive advantage without even improving their ocntent.
 
 ### Who should explore this
-* YouTubers
-* Marketers
-* Pepole who are interested in the usage of NLP and Image Recognition
-* General data science enthusiasts
+*   YouTubers
+*   Marketers
+*   Pepole who are interested in the usage of NLP and Image Recognition
+*   General data science enthusiasts
 
 ## General Walk-through
 ### Scraping
