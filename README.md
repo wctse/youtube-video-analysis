@@ -30,6 +30,7 @@ These sections or features are to be developed:
 ## Motivation
 One of the main motivation to creating this project is this Veritasium (A popular scientific YouTube channel) video:
 
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/27a3c053069244cda76e3f609559442f)](https://app.codacy.com/gh/wctse/youtube-video-analysis?utm_source=github.com&utm_medium=referral&utm_content=wctse/youtube-video-analysis&utm_campaign=Badge_Grade)
 [![My Video Went Viral. Here's Why](https://i.ytimg.com/vi/fHsa9DqmId8/hq720.jpg?sqp=-oaymwEZCNAFEJQDSFXyq4qpAwsIARUAAIhCGAFwAQ==&rs=AOn4CLBme2X0lAIEWCgphf9-k3IqGtnT9w)](https://www.youtube.com/watch?v=fHsa9DqmId8)
 
 This video pointed out the nature of how YouTube shows video to people: Based on their, and other people's preferences, that is judged by the data on what video they click into.
