@@ -171,12 +171,12 @@ def get_video_from_channels(api_key: str, channelIds: list, how_many_videos: int
 
     # Notify the user on non-existing channels
     if not_exist:
-        print(f'Channel(s) with the following id do not exist:')
+        print('Channel(s) with the following id do not exist:')
         for channel in not_exist:
             print(channel)
 
     if no_video:
-        print(f'Channel(s) with the following id do not have videos:')
+        print('Channel(s) with the following id do not have videos:')
         for channel in no_video:
             print(channel)
 

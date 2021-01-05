@@ -35,9 +35,9 @@ with open('data/raw/' + now + '.json', 'r') as file:
     raw = json.load(file)
 
 ## Option 2
-with open('data/raw/20201231_133112.json', 'r') as file:
-    raw = json.load(file)
+# with open('data/raw/20201231_133112.json', 'r') as file:
+#     raw = json.load(file)
 
 # Parse video formats and output into a csv
-parsed = scraping.parse_video_details(raw, _)
+parsed = scraping.parse_video_details(raw, now)
 pd.DataFrame(parsed).to_csv('data/csv/data_' + now + '.csv')
