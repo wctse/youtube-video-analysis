@@ -196,8 +196,12 @@ def parse_video_details(video_details: dict, scrape_time: datetime):
     df = {}
 
     for d in video_details:
-        video_id = d['id']
 
+        # Skip videos without view counts (Previous YouTube Originals videos)
+        if not d.get('statistics').get('viewCount'):
+            continue
+
+        video_id = d['id']
         sub = d.get('channel_subscribers')
         view = int(d.get('statistics').get('viewCount'))
 
@@ -218,8 +222,14 @@ def parse_video_details(video_details: dict, scrape_time: datetime):
             'published_at': d.get('snippet').get('publishedAt'),
             'tags': d.get('snippet').get('tags'),
             'category': d.get('snippet').get('categoryId'),
-            'thumbnail': d.get('snippet').get('thumbnails').get('maxres').get('url'),
         })
+
+        if d.get('snippet').get('thumbnails').get('maxres'):
+            df[video_id]['thumbnail'] = d.get('snippet').get('thumbnails').get('maxres').get('url')
+        elif d.get('snippet').get('thumbnails').get('standard'):
+            df[video_id]['thumbnail'] = d.get('snippet').get('thumbnails').get('standard').get('url')
+        else:
+            df[video_id]['thumbnail'] = d.get('snippet').get('thumbnails').get('high').get('url')
 
         try:
             df[video_id]['localizations'] = d.get('localizations').keys()

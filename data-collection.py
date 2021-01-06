@@ -5,13 +5,14 @@ import scraping
 import json
 from datetime import datetime
 
-# import importlib
-# importlib.reload(scraping)
+import importlib
+importlib.reload(scraping)
 
 key = open('api-key.txt', 'r').read()
 channels = ['UCYO_jab_esuFRV4b17AJtAw']
 now = datetime.now().strftime('%Y%m%d_%H%M%S')
-
+now_dt = datetime.strptime(now, '%Y%m%d_%H%M%S')
+old_csv = 'data/csv/data_20210101_145809.csv'
 
 # Find channels to scrape videos on
 if key == 'Insert your API key here':
@@ -24,7 +25,8 @@ else:
 with open('data/channels/channels_20201229_182240.txt', 'r') as file:
     channels = file.read().splitlines()
 
-videos, scrape_time = scraping.get_video_from_channels(key, channels, how_many_videos=1, subscriber_threshold=1000)
+videos, scrape_time = scraping.get_video_from_channels(key, channels[966:],
+                                                       how_many_videos=10, subscriber_threshold=1000)
 
 with open('data/raw/' + now + '.json', 'a') as file:
     json.dump(videos, file)
@@ -39,5 +41,10 @@ with open('data/raw/' + now + '.json', 'r') as file:
 #     raw = json.load(file)
 
 # Parse video formats and output into a csv
-parsed = scraping.parse_video_details(raw, now)
-pd.DataFrame(parsed).to_csv('data/csv/data_' + now + '.csv')
+parsed = scraping.parse_video_details(raw, now_dt)
+df = pd.DataFrame(parsed)
+
+# Combine new csv with old csv
+df_old = pd.read_csv(old_csv, index_col=0)
+df_concat = pd.concat([df, df_old]).reset_index()
+df_concat.to_csv('data/csv/data_' + now + '.csv')
