@@ -23,6 +23,8 @@ csv = 'data_20210106_220013.csv'  # Change this
 df = pd.read_csv(f'data/csv/{csv}', index_col=0)
 
 # (1) Filter data
+# TODO: Optimize the speed of scanning by requesting API in batches, under the 400k byte limit
+print('(1) Data filtering...')
 ## 1a. Videos that is not English-based, or consists of English localizations
 
 # There are multiple versions of English in YouTube Database, change all of them into 'en'
@@ -37,7 +39,8 @@ df_languageless = df_languageless
 title_languages = []
 translate_client = translate.Client()
 
-for title in df_languageless.title:
+for title in tqdm(df_languageless.title,
+                  desc='Scanning titles...'):
     title_languages += [translate_client.detect_language(title)]
 
 # Record the languages if the confidence is over 0.9
@@ -55,7 +58,8 @@ if len(df_languageless_still) > 0:
     descriptions = [des[:500] for des in descriptions]  # Prevent descriptions to be too long
 
     description_languages = []
-    for des in descriptions:
+    for des in tqdm(descriptions,
+                    desc='Scanning descriptions...'):
         description_languages += [translate_client.detect_language(des)]
 
     df_languageless_still['language'] = [d['language'] if d['confidence'] > 0.9
@@ -70,6 +74,8 @@ df = pd.concat([df[df['language'] == 'en'],
 df = df[df['live'] == 0]
 
 # (2) Column: 'published_at'
+print('(2) Column "published_at"...')
+
 df['published_at'] = pd.to_datetime(df['published_at'])
 
 ## 2a. Remove videos that are published in the latest 48 hours as views may have not been accumulated
@@ -77,11 +83,13 @@ df = df[df['published_at'] < df['published_at'].max() - timedelta(hours=48)]
 
 ## 2b. Binning into different hours of publishing
 df['hour_published'] = df['published_at'].apply(lambda x: x.hour)
-df['hour_published'] = pd.cut(df['hour_published'], bins=8, right=False, labels=['0-2', '3-5', '6-8', '9-11',
-                                                                                 '12-14', '15-17', '18-20', '21-23'])
-
+df['hour_published'] = pd.cut(df['hour_published'], bins=8, right=False, labels=['0', '3', '6', '9',
+                                                                                 '12', '15', '18', '21'])
 
 # (3) Column: 'length'
+print('(3) Column "length"...')
+
+
 def length_parse(length):
     """
     The original format for length from retrieved data is "PT__H__M__S",
@@ -101,6 +109,7 @@ def length_parse(length):
 df['length'] = df['length'].apply(length_parse)
 
 # (4) Column: 'category'
+print('(4) Column "category"...')
 categories = {}
 
 ## 4a. Request the list of categories from YouTube.
@@ -117,6 +126,7 @@ df['category'] = df['category'].apply(str).map(categories)
 df = df[df['category'] != 'Music']
 
 # (5) Column: 'title'
+print('(5) Column "title"...')
 
 ## 5a. Length
 df['title_length'] = df['title'].apply(len)
@@ -137,6 +147,7 @@ df['all_capitalized_word'] = df['title'].apply(lambda x: 1 if x == x.upper() els
 ## 5e. What word does the title start with?
 
 # (6) Column: 'thumbnail'
+print('(6) Column "thumbnail"...')
 # TODO: Rearrange the columns after running all thumbnails through Google Vision API
 
 ## 6a. Dominant Colour
@@ -158,7 +169,9 @@ df['thumbnail_text_length'] = 0
 df['thumbnail_text_content'] = None
 max_text_length = 0
 
-for i, url in tqdm(enumerate(df['thumbnail'])):
+
+for i, url in (enumerate(tqdm(df['thumbnail'],
+                              desc='Scanning thumbnails...'))):
     image.source.image_uri = url
 
     ## 6b. Object Detection
@@ -197,3 +210,5 @@ for i, url in tqdm(enumerate(df['thumbnail'])):
     ## 6d. Are there squares, boxes, circles that highlights things?
 
 df.to_csv('data/cleaned_csv/data_' + now + '_cleaned.csv')
+
+print('All done!')
