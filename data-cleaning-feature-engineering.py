@@ -7,6 +7,7 @@ It is suggested for users to create an extra environment explicitly with TF 1.15
 import numpy as np
 import pandas as pd
 from google.cloud import storage, vision
+from google.cloud import translate_v2 as translate
 
 import re
 import requests
@@ -18,12 +19,48 @@ pd.options.mode.chained_assignment = None
 
 now = datetime.now().strftime('%Y%m%d_%H%M%S')
 key = open('api-key.txt', 'r').read()
-csv = 'data_20210101_145809_updatedthumbnail.csv'  # Change this
-df = pd.read_csv(f'data/csv/{csv}').astype('object')
+csv = 'data_20210106_220013.csv'  # Change this
+df = pd.read_csv(f'data/csv/{csv}', index_col=0)
 
 # (1) Filter data
 ## 1a. Videos that is not English-based, or consists of English localizations
-## 1b. Videos that are live streams
+
+# There are multiple versions of English in YouTube Database, change all of them into 'en'
+english = ['en', 'en-GB', 'en-US', 'en-CA']
+df['language'] = df.default_language.apply(lambda x: 'en' if x in english else x)
+
+# Find out those without data about their language and scan their titles through Google Cloud Translate API
+df_languageless = df.copy()
+df_languageless = df_languageless[df_languageless.default_language.isna()]
+df_languageless = df_languageless
+
+translate_client = translate.Client()
+title_languages = translate_client.detect_language(list(df_languageless.title))
+
+# Record the languages if the confidence is over 0.9
+df_languageless['language'] = [d['language'] if d['confidence'] > 0.9
+                               else None for d in title_languages]
+
+# Filter out those with confidence lower than 0.9
+df_languageless_still = df_languageless.copy()
+df_languageless_still = df_languageless_still[df_languageless_still.language.isna()]
+
+# Scan the descriptions of videos that is still unidentified
+if len(df_languageless_still) > 0:
+    descriptions = df_languageless_still.description
+    descriptions = descriptions.fillna('')
+    descriptions = list(descriptions)
+
+    description_languages = translate_client.detect_language(descriptions)
+    df_languageless_still['language'] = [d['language'] if d['confidence'] > 0.9
+                                         else None for d in description_languages]
+
+# Only select instances that are identified as English
+df = pd.concat([df[df['language'] == 'en'],
+                df_languageless[df_languageless['language'] == 'en'],
+                df_languageless_still[df_languageless_still['language'] == 'en']])
+
+## 1b. Filter videos that are live streams
 df = df[df['live'] == 0]
 
 # (2) Column: 'published_at'
