@@ -34,8 +34,11 @@ df_languageless = df.copy()
 df_languageless = df_languageless[df_languageless.default_language.isna()]
 df_languageless = df_languageless
 
+title_languages = []
 translate_client = translate.Client()
-title_languages = translate_client.detect_language(list(df_languageless.title))
+
+for title in df_languageless.title:
+    title_languages += [translate_client.detect_language(title)]
 
 # Record the languages if the confidence is over 0.9
 df_languageless['language'] = [d['language'] if d['confidence'] > 0.9
@@ -49,9 +52,12 @@ df_languageless_still = df_languageless_still[df_languageless_still.language.isn
 if len(df_languageless_still) > 0:
     descriptions = df_languageless_still.description
     descriptions = descriptions.fillna('')
-    descriptions = list(descriptions)
+    descriptions = [des[:500] for des in descriptions]  # Prevent descriptions to be too long
 
-    description_languages = translate_client.detect_language(descriptions)
+    description_languages = []
+    for des in descriptions:
+        description_languages += [translate_client.detect_language(des)]
+
     df_languageless_still['language'] = [d['language'] if d['confidence'] > 0.9
                                          else None for d in description_languages]
 
