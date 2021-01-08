@@ -9,12 +9,15 @@ This project is an analysis on what contributes to the popularity (or unpopulari
 *   Pandas
 *   Scipy
 *   Selenium
-*   Google YouTube API for extracting data from YouTube
-*   Google Cloud Vision for detecting objects and texts from video thumbnail
 *   Scikit-learn
 *   TensorFlow
 
-#### Other Resources
+### Google Cloud Platform
+*   Google YouTube API for extracting data from YouTube
+*   Google Cloud Vision for detecting objects and texts from video thumbnail
+*   Google Translate API for identifying English videos
+
+### Other Resources
 *   Font "A Big Deal": https://www.dafont.com/a-big-deal.font
 
 ## Project Status
