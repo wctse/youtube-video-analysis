@@ -8,6 +8,7 @@ import numpy as np
 import pandas as pd
 from google.cloud import storage, vision
 from google.cloud import translate_v2 as translate
+import spacy
 
 import re
 import requests
@@ -19,7 +20,7 @@ pd.options.mode.chained_assignment = None
 
 now = datetime.now().strftime('%Y%m%d_%H%M%S')
 key = open('api-key.txt', 'r').read()
-csv = 'data_20210106_220013.csv'  # Change this
+csv = 'data_20210107_182538.csv'  # Change this
 df = pd.read_csv(f'data/csv/{csv}', index_col=0)
 
 # (1) Filter data
@@ -143,8 +144,17 @@ for i, title in enumerate(titles_tokenized):
 ## 5c. Is the whole title capitalized?
 df['all_capitalized_word'] = df['title'].apply(lambda x: 1 if x == x.upper() else 0)
 
-## 5d. Sentiment Analysis, untreated & absolute
+## 5d. Sentiment Analysis, non-absolute & absolute
+
 ## 5e. What word does the title start with?
+word_annotator = spacy.load('en_core_web_sm')
+first_words = df['title'].apply(lambda x: x.split()[0])
+pos_results = []
+
+for word in tqdm(first_words, desc='Detecting title first words...'):
+    pos_results += [word_annotator(word)[0].pos_]
+
+df['title_first_pos'] = pos_results
 
 # (6) Column: 'thumbnail'
 print('(6) Column "thumbnail"...')
@@ -161,7 +171,7 @@ print('(6) Column "thumbnail"...')
 ## Explicitly use service account credentials by specifying the private key file.
 storage_client = storage.Client.from_service_account_json('google-cloud/service-account.json')
 
-annotator = vision.ImageAnnotatorClient()
+object_annotator = vision.ImageAnnotatorClient()
 image = vision.Image()
 
 df['thumbnail_objects'] = 0
@@ -169,14 +179,13 @@ df['thumbnail_text_length'] = 0
 df['thumbnail_text_content'] = None
 max_text_length = 0
 
-
 for i, url in (enumerate(tqdm(df['thumbnail'],
                               desc='Scanning thumbnails...'))):
     image.source.image_uri = url
 
     ## 6b. Object Detection
 
-    objects = annotator.object_localization(image=image).localized_object_annotations
+    objects = object_annotator.object_localization(image=image).localized_object_annotations
     df.iloc[i, df.columns.get_loc('thumbnail_objects')] = len(objects)
 
     for object_ in objects:
@@ -190,7 +199,7 @@ for i, url in (enumerate(tqdm(df['thumbnail'],
     ## TODO: Some OCR-recognized texts are not words, and they should be separated from clear words
     ##  on the thumbnail in feature generation.
 
-    texts = annotator.text_detection(image=image).text_annotations
+    texts = object_annotator.text_detection(image=image).text_annotations
 
     # Only assign values to DataFrame if there are texts
     if texts:
