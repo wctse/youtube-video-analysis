@@ -94,6 +94,8 @@ def get_video_from_channels(api_key: str, channelIds: list, how_many_videos: int
     :param how_many_videos: The limit to the amount of videos to scrape from a channel.
     :param subscriber_threshold: The minimum subscriber needed for a channel's video to be scraped.
     :return: Tuple of: (1) A list of video contents from the given channels; (2) The time videos are scraped
+
+    TODO: Fix the bug where the displayed errors overrides the tqdm function to cause multiple returned counts
     """
 
     scrape_time = datetime.now().replace(microsecond=0)
