@@ -9,6 +9,8 @@ import pandas as pd
 from google.cloud import storage, vision
 from google.cloud import translate_v2 as translate
 import spacy
+from PIL import Image
+from colorthief import ColorThief
 
 import re
 import requests
@@ -20,7 +22,7 @@ pd.options.mode.chained_assignment = None
 
 now = datetime.now().strftime('%Y%m%d_%H%M%S')
 key = open('api-key.txt', 'r').read()
-csv = 'data_20210107_182538.csv'  # Change this
+csv = 'data_20210109_213012.csv'  # Change this
 df = pd.read_csv(f'data/csv/{csv}', index_col=0)
 
 # (1) Filter data
@@ -161,7 +163,14 @@ print('(6) Column "thumbnail"...')
 # TODO: Rearrange the columns after running all thumbnails through Google Vision API
 
 ## 6a. Dominant Colour
+dominant_colors = []
 
+for image_url in tqdm(df.iloc.thumbnail, desc='Detecting thumbnail colour...'):
+    with open('images/pic.jpg', 'wb') as handler:
+        response = requests.get(image_url, stream=True).content
+        handler.write(response)
+
+    dominant_colors += [ColorThief('images/pic.jpg').get_color(quality=100)]
 
 ## 6b & 6c
 ## Google Vision API is used in this section.
@@ -217,6 +226,11 @@ for i, url in (enumerate(tqdm(df['thumbnail'],
         df.iloc[i, df.columns.get_loc('thumbnail_text_length')] = len(text_lines)
 
     ## 6d. Are there squares, boxes, circles that highlights things?
+
+# (7) Column: Description
+## Replace \n by space
+df['description'] = df['description'].apply(lambda desc: str(desc).replace('\n', ' '))
+
 
 df.to_csv('data/cleaned_csv/data_' + now + '_cleaned.csv')
 
