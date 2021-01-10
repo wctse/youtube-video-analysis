@@ -9,7 +9,6 @@ import pandas as pd
 from google.cloud import storage, vision
 from google.cloud import translate_v2 as translate
 import spacy
-from PIL import Image
 from colorthief import ColorThief
 
 import re
