@@ -169,7 +169,7 @@ for image_url in tqdm(df.iloc.thumbnail, desc='Detecting thumbnail colour...'):
         response = requests.get(image_url, stream=True).content
         handler.write(response)
 
-    dominant_colors += [ColorThief('images/pic.jpg').get_color(quality=100)]
+    dominant_colors += [ColorThief('images/pic.jpg').get_color(quality=125)]
 
 ## 6b & 6c
 ## Google Vision API is used in this section.
