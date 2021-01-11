@@ -24,6 +24,13 @@ key = open('api-key.txt', 'r').read()
 csv = 'data_20210109_213012.csv'  # Change this
 df = pd.read_csv(f'data/csv/{csv}', index_col=0)
 
+
+# Define a function for checkpoint usages
+def checkpoint(dataframe: pd.DataFrame):
+    time = datetime.now().strftime('%Y%m%d_%H%M%S')
+    dataframe.to_csv('data/cleaned_csv/checkpoints/checkpoint_' + time + '.csv')
+
+
 # (1) Filter data
 # TODO: Optimize the speed of scanning by requesting API in batches, under the 400k byte limit
 print('(1) Data filtering...')
@@ -74,6 +81,8 @@ df = pd.concat([df[df['language'] == 'en'],
 
 ## 1b. Filter videos that are live streams
 df = df[df['live'] == 0]
+
+checkpoint(df)
 
 # (2) Column: 'published_at'
 print('(2) Column "published_at"...')
@@ -156,6 +165,7 @@ for word in tqdm(first_words, desc='Detecting title first words...'):
     pos_results += [word_annotator(word)[0].pos_]
 
 df['title_first_pos'] = pos_results
+checkpoint(df)
 
 # (6) Column: 'thumbnail'
 print('(6) Column "thumbnail"...')
@@ -229,7 +239,6 @@ for i, url in (enumerate(tqdm(df['thumbnail'],
 # (7) Column: Description
 ## Replace \n by space
 df['description'] = df['description'].apply(lambda desc: str(desc).replace('\n', ' '))
-
 
 df.to_csv('data/cleaned_csv/data_' + now + '_cleaned.csv')
 

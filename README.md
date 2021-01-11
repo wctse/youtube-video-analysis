@@ -8,7 +8,8 @@ This project is an analysis on what contributes to the popularity (or unpopulari
 *   Numpy
 *   Pandas
 *   Scipy
-*   Selenium
+*   Selenium 
+*   ColorThief
 *   Scikit-learn
 *   TensorFlow
 
