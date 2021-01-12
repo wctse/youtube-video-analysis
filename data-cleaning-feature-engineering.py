@@ -25,6 +25,7 @@ key = open('api-key.txt', 'r').read()
 csv = 'data_20210109_213012.csv'  # Change this
 df = pd.read_csv(f'data/csv/{csv}', index_col=0)
 
+
 # Define a function for checkpoint usages
 def checkpoint(dataframe: pd.DataFrame):
     time = datetime.now().strftime('%Y%m%d_%H%M%S')
