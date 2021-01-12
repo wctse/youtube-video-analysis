@@ -10,6 +10,7 @@ from google.cloud import storage, vision
 from google.cloud import translate_v2 as translate
 import spacy
 from colorthief import ColorThief
+import cv2
 
 import re
 import requests
@@ -23,7 +24,6 @@ now = datetime.now().strftime('%Y%m%d_%H%M%S')
 key = open('api-key.txt', 'r').read()
 csv = 'data_20210109_213012.csv'  # Change this
 df = pd.read_csv(f'data/csv/{csv}', index_col=0)
-
 
 # Define a function for checkpoint usages
 def checkpoint(dataframe: pd.DataFrame):
@@ -174,15 +174,34 @@ print('(6) Column "thumbnail"...')
 ## 6a. Dominant Colour
 dominant_colors = []
 
-for image_url in tqdm(df.iloc.thumbnail, desc='Detecting thumbnail colour...'):
-    with open('images/pic.jpg', 'wb') as handler:
-        response = requests.get(image_url, stream=True).content
-        handler.write(response)
+for image_url in tqdm(df.thumbnail, desc='Detecting thumbnail colour...'):
+    error_count = 0
 
-    dominant_colors += [ColorThief('images/pic.jpg').get_color(quality=125)]
+    # Sometimes Python returns OSError because the images are not downloaded as quick as the analysis.
+    # This try-except handler allows an image analysis to be retried for 5 times before it is recorded as "None"
+    while error_count < 5:
+        try:
+            with open('images/pic.jpg', 'wb') as handler:
+                response = requests.get(image_url, stream=True).content
+                handler.write(response)
+                dominant_colors += [ColorThief('images/pic.jpg').get_color(quality=125)]
+        except OSError:
+            error_count += 1
+            continue
+        break
+    else:
+        dominant_colors += ()
 
-## 6b & 6c
-## Google Vision API is used in this section.
+df['thumbnail_dominant_color'] = dominant_colors
+
+## 6b. Are there squares, boxes, circles that highlights things?
+
+# cv_image = cv2.imread('images/pic.jpg')
+# cv_image = cv2.cvtColor(cv_image, cv2.COLOR_BGR2GRAY)
+# _, threshold = cv2.threshold(cv_image, 240, 255, cv2.THRESH_BINARY)
+# _, contours, _ = cv2.findContours(threshold, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+
+## Google Vision API is used in this section of 6c and 6d.
 ## It is also required to set the Environment Variable "GOOGLE_APPLICATION_CREDENTIALS" to a json file provided by
 ## Google. Check https://cloud.google.com/docs/authentication/getting-started for more details.
 
@@ -201,7 +220,7 @@ for i, url in (enumerate(tqdm(df['thumbnail'],
                               desc='Scanning thumbnails...'))):
     image.source.image_uri = url
 
-    ## 6b. Object Detection
+## 6c. Object Detection
 
     objects = object_annotator.object_localization(image=image).localized_object_annotations
     df.iloc[i, df.columns.get_loc('thumbnail_objects')] = len(objects)
@@ -213,9 +232,9 @@ for i, url in (enumerate(tqdm(df['thumbnail'],
         if object_.score > 0.5:
             df.iloc[i, df.columns.get_loc(column_name)] += 1
 
-    ## 6c. Are there words? What are they?
-    ## TODO: Some OCR-recognized texts are not words, and they should be separated from clear words
-    ##  on the thumbnail in feature generation.
+## 6d. Are there words? What are they?
+## TODO: Some OCR-recognized texts are not words, and they should be separated from clear words
+##  on the thumbnail in feature generation.
 
     texts = object_annotator.text_detection(image=image).text_annotations
 
@@ -234,7 +253,6 @@ for i, url in (enumerate(tqdm(df['thumbnail'],
 
         df.iloc[i, df.columns.get_loc('thumbnail_text_length')] = len(text_lines)
 
-    ## 6d. Are there squares, boxes, circles that highlights things?
 
 # (7) Column: Description
 ## Replace \n by space
