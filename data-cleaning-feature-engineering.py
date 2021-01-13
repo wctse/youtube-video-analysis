@@ -10,11 +10,12 @@ from google.cloud import storage, vision
 from google.cloud import translate_v2 as translate
 import spacy
 from colorthief import ColorThief
-import cv2
+# import cv2
 
 import re
 import requests
 from datetime import datetime, timedelta
+import time
 from tqdm import tqdm
 
 # Turn off "A value is trying to be set on a copy of a slice from a DataFrame" warning
@@ -28,14 +29,18 @@ df = pd.read_csv(f'data/csv/{csv}', index_col=0)
 
 # Define a function for checkpoint usages
 def checkpoint(dataframe: pd.DataFrame):
-    time = datetime.now().strftime('%Y%m%d_%H%M%S')
-    dataframe.to_csv('data/cleaned_csv/checkpoints/checkpoint_' + time + '.csv')
+    current_time = datetime.now().strftime('%Y%m%d_%H%M%S')
+    dataframe.to_csv('data/cleaned_csv/checkpoints/checkpoint_' + current_time + '.csv')
 
 
 # (1) Filter data
 # TODO: Optimize the speed of scanning by requesting API in batches, under the 400k byte limit
 print('(1) Data filtering...')
-## 1a. Videos that is not English-based, or consists of English localizations
+
+## 1a. Filter videos that are live streams
+df = df[df['live'] == 0]
+
+## 1b. Videos that is not English-based, or consists of English localizations
 
 # There are multiple versions of English in YouTube Database, change all of them into 'en'
 english = ['en', 'en-GB', 'en-US', 'en-CA']
@@ -80,8 +85,6 @@ df = pd.concat([df[df['language'] == 'en'],
                 df_languageless[df_languageless['language'] == 'en'],
                 df_languageless_still[df_languageless_still['language'] == 'en']])
 
-## 1b. Filter videos that are live streams
-df = df[df['live'] == 0]
 
 checkpoint(df)
 
@@ -175,6 +178,8 @@ print('(6) Column "thumbnail"...')
 ## 6a. Dominant Colour
 dominant_colors = []
 
+df = pd.read_csv('data/cleaned_csv/checkpoints/checkpoint_20210112_235052.csv', index_col=0)
+
 for image_url in tqdm(df.thumbnail, desc='Detecting thumbnail colour...'):
     error_count = 0
 
@@ -183,15 +188,24 @@ for image_url in tqdm(df.thumbnail, desc='Detecting thumbnail colour...'):
     while error_count < 5:
         try:
             with open('images/pic.jpg', 'wb') as handler:
-                response = requests.get(image_url, stream=True).content
-                handler.write(response)
+                response = requests.get(image_url, stream=True)
+
+                time.sleep(0.1)
+
+                if (not response.ok) or (not response):
+                    dominant_colors += ()
+                    break
+
+                handler.write(response.content)
                 dominant_colors += [ColorThief('images/pic.jpg').get_color(quality=125)]
+                break
+
         except OSError:
             error_count += 1
             continue
-        break
     else:
         dominant_colors += ()
+
 
 df['thumbnail_dominant_color'] = dominant_colors
 
