@@ -91,10 +91,29 @@ checkpoint(df)
 # (2) Column: 'published_at'
 print('(2) Column "published_at"...')
 
-df['published_at'] = pd.to_datetime(df['published_at'])
+# Convert into datetime for comparison
+# Prevent comparison of timezone-aware and timezone-naive datetime objects by providing utc=True
+df['published_at'] = pd.to_datetime(df['published_at']).apply(datetime.replace, tzinfo=None)
 
 ## 2a. Remove videos that are published in the latest 48 hours as views may have not been accumulated
-df = df[df['published_at'] < df['published_at'].max() - timedelta(hours=48)]
+## Different videos are scraped in different periods. The algorithm needs to deal with this by the following methods.
+## Format: {(Video ID Lower Bound, Video ID Upper Bound): Scrape time in UTC+0}
+scrape_times = {
+    (0, 5130): datetime(2020, 12, 31, 5, 31, 12,),
+    (5131, 10752): datetime(2021, 1, 6, 16, 0, 13),
+    (10753, 14271): datetime(2021, 1, 7, 10, 2, 38),
+    (14272, 19085): datetime(2021, 1, 9, 7, 31, 53),
+    (19086, 24052): datetime(2021, 1, 9, 8, 1, 1),
+}
+
+df1 = pd.DataFrame(columns=df.columns)
+
+for id_bound in scrape_times:
+    df_temp = df.iloc[id_bound[0]:id_bound[1]].copy()
+    df_temp = df_temp[df_temp['published_at'] < scrape_times.get(id_bound) - timedelta(hours=47)]  # 1 hour for scraping
+    df1 = pd.concat([df1, df_temp])
+
+df = df1.copy()
 
 ## 2b. Binning into different hours of publishing
 df['hour_published'] = df['published_at'].apply(lambda x: x.hour)
