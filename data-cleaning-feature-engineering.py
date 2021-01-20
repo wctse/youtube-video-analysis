@@ -85,6 +85,7 @@ df = pd.concat([df[df['language'] == 'en'],
                 df_languageless[df_languageless['language'] == 'en'],
                 df_languageless_still[df_languageless_still['language'] == 'en']])
 
+df = df.sort_index()
 
 checkpoint(df)
 
@@ -196,8 +197,9 @@ print('(6) Column "thumbnail"...')
 
 ## 6a. Dominant Colour
 dominant_colors = []
+previous_tuple_length = 0
 
-df = pd.read_csv('data/cleaned_csv/checkpoints/checkpoint_20210112_235052.csv', index_col=0)
+df = pd.read_csv('data/cleaned_csv/checkpoints/checkpoint_20210115_203822.csv', index_col=0)
 
 for image_url in tqdm(df.thumbnail, desc='Detecting thumbnail colour...'):
     error_count = 0
@@ -225,6 +227,9 @@ for image_url in tqdm(df.thumbnail, desc='Detecting thumbnail colour...'):
     else:
         dominant_colors += ()
 
+    tuple_length = len(dominant_colors)
+    if tuple_length == previous_tuple_length:
+        print(error_count, tuple_length, image_url)
 
 df['thumbnail_dominant_color'] = dominant_colors
 
