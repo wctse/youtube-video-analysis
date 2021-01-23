@@ -197,16 +197,20 @@ print('(6) Column "thumbnail"...')
 
 ## 6a. Dominant Colour
 dominant_colors = []
-previous_tuple_length = 0
 
-df = pd.read_csv('data/cleaned_csv/checkpoints/checkpoint_20210115_203822.csv', index_col=0)
+# Debug code:
+# dominant_colors_count = 0
+# last_dominant_colors_count = 0
+
+# Retrieve checkpoint code
+# df = pd.read_csv('data/cleaned_csv/checkpoints/checkpoint_20210120_202430.csv', index_col=0)
 
 for image_url in tqdm(df.thumbnail, desc='Detecting thumbnail colour...'):
     error_count = 0
 
     # Sometimes Python returns OSError because the images are not downloaded as quick as the analysis.
     # This try-except handler allows an image analysis to be retried for 5 times before it is recorded as "None"
-    while error_count < 5:
+    while error_count < 3:
         try:
             with open('images/pic.jpg', 'wb') as handler:
                 response = requests.get(image_url, stream=True)
@@ -225,11 +229,13 @@ for image_url in tqdm(df.thumbnail, desc='Detecting thumbnail colour...'):
             error_count += 1
             continue
     else:
-        dominant_colors += ()
+        dominant_colors += [()]
 
-    tuple_length = len(dominant_colors)
-    if tuple_length == previous_tuple_length:
-        print(error_count, tuple_length, image_url)
+    # Debug code:
+    # last_dominant_colors_count = dominant_colors_count
+    # dominant_colors_count = len(dominant_colors)
+    # if dominant_colors_count == last_dominant_colors_count:
+    #     print(f'Number of errors: {error_count}\nLength of tuple:{dominant_colors_count}\nImage:{image_url}')
 
 df['thumbnail_dominant_color'] = dominant_colors
 
