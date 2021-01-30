@@ -189,6 +189,7 @@ for word in tqdm(first_words, desc='Detecting title first words...'):
     pos_results += [word_annotator(word)[0].pos_]
 
 df['title_first_pos'] = pos_results
+df = df.reset_index().drop('level_0', axis=1)
 checkpoint(df)
 
 # (6) Column: 'thumbnail'
@@ -196,16 +197,17 @@ print('(6) Column "thumbnail"...')
 # TODO: Rearrange the columns after running all thumbnails through Google Vision API
 
 ## 6a. Dominant Colour
-dominant_colors = []
+df['thumbnail_dominant_color'] = None
 
 # Debug code:
 # dominant_colors_count = 0
 # last_dominant_colors_count = 0
 
 # Retrieve checkpoint code
-# df = pd.read_csv('data/cleaned_csv/checkpoints/checkpoint_20210120_202430.csv', index_col=0)
+# df = pd.read_csv('data/cleaned_csv/checkpoints/checkpoint_20210130_183843.csv', index_col=0)
 
-for image_url in tqdm(df.thumbnail, desc='Detecting thumbnail colour...'):
+for index, row in tqdm(df.iterrows(), desc='Detecting thumbnail colour...', total=df.shape[0]):
+    image_url = row.thumbnail
     error_count = 0
 
     # Sometimes Python returns OSError because the images are not downloaded as quick as the analysis.
@@ -218,26 +220,24 @@ for image_url in tqdm(df.thumbnail, desc='Detecting thumbnail colour...'):
                 time.sleep(0.1)
 
                 if (not response.ok) or (not response):
-                    dominant_colors += ()
+                    df.at[index, 'thumbnail_dominant_color'] = ()
                     break
 
                 handler.write(response.content)
-                dominant_colors += [ColorThief('images/pic.jpg').get_color(quality=125)]
+                df.at[index, 'thumbnail_dominant_color'] = ColorThief('images/pic.jpg').get_color(quality=125)
                 break
 
         except OSError:
             error_count += 1
             continue
     else:
-        dominant_colors += [()]
+        df.at[index, 'thumbnail_dominant_color'] = ()
 
     # Debug code:
     # last_dominant_colors_count = dominant_colors_count
     # dominant_colors_count = len(dominant_colors)
     # if dominant_colors_count == last_dominant_colors_count:
     #     print(f'Number of errors: {error_count}\nLength of tuple:{dominant_colors_count}\nImage:{image_url}')
-
-df['thumbnail_dominant_color'] = dominant_colors
 
 ## 6b. Are there squares, boxes, circles that highlights things?
 
